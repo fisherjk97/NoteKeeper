@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import java.util.List;
 
 public class NoteActivity extends AppCompatActivity {
 
+    private final String TAG = getClass().getSimpleName();
     public static final String NOTE_POSITION = "com.example.notekeeper.NOTE_POSITION";
 
     //we want to preserve these in the instance state
@@ -71,6 +73,9 @@ public class NoteActivity extends AppCompatActivity {
         if(!mIsNewNote)
             displayNote(mSpinnerCourses, mTextNoteTitle, mTextNoteText);
 
+        Log.d(TAG, "onCreate");
+
+
     }
 
     private void restoreOriginalNoteValues(Bundle savedInstanceState) {
@@ -99,6 +104,7 @@ public class NoteActivity extends AppCompatActivity {
             //create that new note
             createNewNote();
         }
+        Log.i(TAG, "mNotePosition: " + mNotePosition);
         mNote = DataManager.getInstance().getNotes().get(mNotePosition);
 
     }
@@ -151,6 +157,7 @@ public class NoteActivity extends AppCompatActivity {
         super.onPause();
 
         if(mIsCancelling){
+            Log.i(TAG, "Cancelling note at position: " + mNotePosition);
             if(mIsNewNote) {
                 //remove note from backing store if cancelling out if we created a new note
                 DataManager.getInstance().removeNote(mNotePosition);
@@ -161,6 +168,8 @@ public class NoteActivity extends AppCompatActivity {
         }else {
             saveNote();
         }
+
+        Log.d(TAG, "onPause");
     }
 
     private void storePreviousNoteValues() {
