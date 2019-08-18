@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import android.view.View;
 
@@ -14,11 +13,13 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +30,10 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
+    private RecyclerView mRecyclerItems;
+    private LinearLayoutManager mNotesLayoutManager;
+    private CourseRecyclerAdapter mCourseRecyclerAdapter;
+    private GridLayoutManager mCoursesLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,18 +70,39 @@ public class MainActivity extends AppCompatActivity
     private void initializeDisplayContent() {
 
 
-        final RecyclerView recyclerNotes = (RecyclerView) findViewById(R.id.list_items);
-        final LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
-        recyclerNotes.setLayoutManager(notesLayoutManager);
+        mRecyclerItems = (RecyclerView) findViewById(R.id.list_items);
+        mNotesLayoutManager = new LinearLayoutManager(this);
+        mCoursesLayoutManager = new GridLayoutManager(this, 2);
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
-        recyclerNotes.setAdapter(mNoteRecyclerAdapter);
+
+        List<CourseInfo> courses = DataManager.getInstance().getCourses();
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
+
+        displayNotes();
 
 
+    }
 
+    private void selectNavigationMenuItem(int id) {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        menu.findItem(id).setChecked(true);//display as currently selected option
+    }
 
+    private void displayNotes() {
+        mRecyclerItems.setLayoutManager(mNotesLayoutManager);
+        mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+        //set notes checked
+        selectNavigationMenuItem(R.id.nav_notes);
+    }
 
+    private void displayCourses() {
+        mRecyclerItems.setLayoutManager(mCoursesLayoutManager);
+        mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
+
+        selectNavigationMenuItem(R.id.nav_courses);
     }
 
     @Override
@@ -117,22 +143,27 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
+        if (id == R.id.nav_notes) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_tools) {
-
+            displayNotes();
+            //handleSelection("Notes");
+        } else if (id == R.id.nav_courses) {
+            displayCourses();
+            //handleSelection("Courses");
         } else if (id == R.id.nav_share) {
-
+            handleSelection("Don't you think you've shared enough?");
         } else if (id == R.id.nav_send) {
+            handleSelection("Send");
 
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void handleSelection(String message) {
+        View view = findViewById(R.id.list_items);
+        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
     }
 }
