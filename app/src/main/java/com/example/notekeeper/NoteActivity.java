@@ -14,8 +14,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 
+import com.example.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 
 import java.util.List;
@@ -46,6 +48,7 @@ public class NoteActivity extends AppCompatActivity {
     private int mCourseIdPos;
     private int mNoteTitlePos;
     private int mNoteTextPos;
+    private SimpleCursorAdapter mAdapterCourses;
 
 
     @Override
@@ -58,17 +61,18 @@ public class NoteActivity extends AppCompatActivity {
         mDbOpenHelper = new NoteKeeperOpenHelper(this);
         mSpinnerCourses = (Spinner) findViewById(R.id.spinner_courses);
 
-        //get list of courses
-        List<CourseInfo> courses = DataManager.getInstance().getCourses();
-
         //get the adapter to format the course layouts
-        ArrayAdapter<CourseInfo> adapterCourses = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courses);
+        mAdapterCourses = new SimpleCursorAdapter(this, android.R.layout.simple_spinner_item, null,
+                new String[] {CourseInfoEntry.COLUMN_COURSE_TITLE},
+                new int[] {android.R.id.text1}, 0);
 
         //set the data to the dropdown
-        adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mAdapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         //associate teh adapter with the spinner
-        mSpinnerCourses.setAdapter(adapterCourses);
+        mSpinnerCourses.setAdapter(mAdapterCourses);
+
+        loadCourseData();
 
         readDisplayStateValues();
 
@@ -89,6 +93,21 @@ public class NoteActivity extends AppCompatActivity {
 
     }
 
+    private void loadCourseData() {
+        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+
+        String[] courseColumns = {
+                CourseInfoEntry.COLUMN_COURSE_ID,
+                CourseInfoEntry.COLUMN_COURSE_TITLE,
+                CourseInfoEntry._ID
+        };
+
+        //query the database
+        Cursor cursor = db.query(CourseInfoEntry.TABLE_NAME, courseColumns, null, null, null, null, CourseInfoEntry.COLUMN_COURSE_TITLE);
+
+        mAdapterCourses.changeCursor(cursor);
+    }
+
     @Override
     protected void onDestroy() {
         mDbOpenHelper.close();
@@ -97,9 +116,6 @@ public class NoteActivity extends AppCompatActivity {
 
     private void loadNoteData() {
         SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-
-        String courseId = "android_intents";
-        String titleStart = "dynamic";
 
         String selection = NoteInfoEntry._ID + " = ?";
         String[] selectionArgs = {Integer.toString(mNoteId)};
@@ -165,15 +181,32 @@ public class NoteActivity extends AppCompatActivity {
         String noteTitle = mNoteCursor.getString(mNoteTitlePos);
         String noteText = mNoteCursor.getString(mNoteTextPos);
 
-        List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        CourseInfo course = DataManager.getInstance().getCourse(courseId);
 
-        int courseIndex = courses.indexOf(course);
+        int courseIndex = getIndexOfCourseId(courseId);
 
         mSpinnerCourses.setSelection(courseIndex);
         mTextNoteTitle.setText(noteTitle);
         mTextNoteText.setText(noteText);
 
+    }
+
+    private int getIndexOfCourseId(String courseId) {
+        Cursor cursor = mAdapterCourses.getCursor();
+        int courseIdPos = cursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_ID);
+        int courseRowIndex = 0;
+
+        boolean more = cursor.moveToFirst();
+        while(more){
+            String cursorCourseId = cursor.getString(courseIdPos);
+            if(courseId.equals(cursorCourseId)){
+                break;
+            }
+
+            courseRowIndex++;
+            more = cursor.moveToNext();
+        }
+
+        return courseRowIndex;
     }
 
     @Override
