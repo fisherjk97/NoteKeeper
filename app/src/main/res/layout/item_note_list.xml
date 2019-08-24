@@ -32,7 +32,7 @@
                 app:srcCompat="@drawable/ic_assignment_black_24dp" />
 
             <TextView
-                android:id="@+id/text_course"
+                android:id="@+id/text_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -41,16 +41,16 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView3"
-                app:layout_constraintTop_toBottomOf="@+id/text_title" />
+                app:layout_constraintTop_toBottomOf="@+id/text_course" />
 
             <TextView
-                android:id="@+id/text_title"
+                android:id="@+id/text_course"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="TextView"
                 android:textAppearance="@style/CourseTitle"
-                app:layout_constraintBottom_toTopOf="@+id/text_course"
+                app:layout_constraintBottom_toTopOf="@+id/text_title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/imageView3"
                 app:layout_constraintTop_toTopOf="parent" />
