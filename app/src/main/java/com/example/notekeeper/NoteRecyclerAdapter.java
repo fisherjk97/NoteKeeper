@@ -46,10 +46,11 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
     public void changeCursor(Cursor cursor){
         if(mCursor != null) {//existing cursor?
             mCursor.close();
+        }
             mCursor = cursor;
             populateColumnPositions();
             notifyDataSetChanged();
-        }
+
     }
 
     @NonNull

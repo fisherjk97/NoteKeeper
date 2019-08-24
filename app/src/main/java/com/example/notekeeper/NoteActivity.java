@@ -97,8 +97,8 @@ public class NoteActivity extends AppCompatActivity {
         SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
 
         String[] courseColumns = {
-                CourseInfoEntry.COLUMN_COURSE_ID,
                 CourseInfoEntry.COLUMN_COURSE_TITLE,
+                CourseInfoEntry.COLUMN_COURSE_ID,
                 CourseInfoEntry._ID
         };
 
