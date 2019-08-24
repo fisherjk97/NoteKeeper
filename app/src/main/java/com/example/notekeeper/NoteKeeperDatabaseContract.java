@@ -24,7 +24,7 @@ public final class NoteKeeperDatabaseContract {
 
     public static final class NoteInfoEntry implements BaseColumns {
 
-        public static final String TABLE_NAME = "course_info";
+        public static final String TABLE_NAME = "note_info";
         public static final String COLUMN_NOTE_TITLE= "note_title";
         public static final String COLUMN_NOTE_TEXT = "note_text";
         public static final String COLUMN_COURSE_ID = "course_id";
