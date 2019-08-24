@@ -2,6 +2,7 @@ package com.example.notekeeper;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,41 +11,72 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
+
 import java.util.List;
 
 public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapter.ViewHolder> {
 
     private final Context mContext;
-    private final List<NoteInfo> mNotes;
-    private final LayoutInflater mlayoutInflater;
+    private Cursor mCursor;
+    private final LayoutInflater mLayoutInflater;
+    private int mCoursePos;
+    private int mNoteTitlePos;
+    private int mIdPos;
 
-    public NoteRecyclerAdapter(Context mContext, List<NoteInfo> mNotes) {
+    public NoteRecyclerAdapter(Context mContext, Cursor cursor) {
         this.mContext = mContext;
-        this.mNotes = mNotes;
-        mlayoutInflater = LayoutInflater.from(this.mContext);
+        this.mCursor = cursor;
+        mLayoutInflater = LayoutInflater.from(this.mContext);
+        populateColumnPositions();
+    }
+
+    private void populateColumnPositions() {
+        if(mCursor == null){
+            return;
+        }else{
+            //get column indexes from mCursor
+            mCoursePos = mCursor.getColumnIndex(NoteInfoEntry.COLUMN_COURSE_ID);
+            mNoteTitlePos = mCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TITLE);
+            mIdPos = mCursor.getColumnIndex(NoteInfoEntry._ID);
+
+        }
+    }
+
+    public void changeCursor(Cursor cursor){
+        if(mCursor != null) {//existing cursor?
+            mCursor.close();
+            mCursor = cursor;
+            populateColumnPositions();
+            notifyDataSetChanged();
+        }
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //create a view based on our resource
-        View itemView = mlayoutInflater.inflate(R.layout.item_note_list, parent, false);
+        View itemView = mLayoutInflater.inflate(R.layout.item_note_list, parent, false);
         return new ViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //associate the data within a desired position
-        NoteInfo note = mNotes.get(position);
-        holder.mTextCourse.setText(note.getCourse().getTitle());
-        holder.mTextTitle.setText(note.getTitle());
-        holder.mId = note.getId();
+        mCursor.moveToPosition(position);
+        String course = mCursor.getString(mCoursePos);
+        String noteTitle = mCursor.getString(mNoteTitlePos);
+        int id = mCursor.getInt(mIdPos);
+
+        holder.mTextCourse.setText(course);
+        holder.mTextTitle.setText(noteTitle);
+        holder.mId = id;
 
     }
 
     @Override
     public int getItemCount() {
-        return mNotes.size();
+        return mCursor == null ? 0 : mCursor.getCount();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
