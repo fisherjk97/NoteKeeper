@@ -283,7 +283,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.i(TAG, "Cancelling note at position: " + mNoteId);
             if(mIsNewNote) {
                 //remove note from backing store if cancelling out if we created a new note
-                DataManager.getInstance().removeNote(mNoteId);
+                deleteNoteFromDatabase();
             }else{
                 //put the old values into the note
                 storePreviousNoteValues();
@@ -293,6 +293,14 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         Log.d(TAG, "onPause");
+    }
+
+    private void deleteNoteFromDatabase() {
+        String selection = NoteInfoEntry._ID + " = ?";
+        String[] selectionArgs = {Integer.toString(mNoteId)};
+        SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+        db.delete(NoteInfoEntry.TABLE_NAME, selection, selectionArgs);
+
     }
 
     private void storePreviousNoteValues() {
