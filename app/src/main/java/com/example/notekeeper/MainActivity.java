@@ -245,9 +245,9 @@ public class MainActivity extends AppCompatActivity
                     final String[] noteColumns = {
                             NoteInfoEntry.getQName(NoteInfoEntry._ID),
                             NoteInfoEntry.COLUMN_NOTE_TITLE,
-                            NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID),
                             CourseInfoEntry.COLUMN_COURSE_TITLE};
-                    final String noteOrderBy = NoteInfoEntry.COLUMN_COURSE_ID +
+
+                    final String noteOrderBy = CourseInfoEntry.COLUMN_COURSE_TITLE +
                             "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
 
                     //note_info join course_info ON note_info.course_id = course_info.course_id
