@@ -28,6 +28,7 @@ import java.util.List;
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int LOADER_NOTES = 0;
+    public static final int LOADER_COURSES = 1;
     private final String TAG = getClass().getSimpleName();
     public static final String NOTE_ID = "com.example.notekeeper.NOTE_ID";
 
@@ -76,7 +77,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         //associate teh adapter with the spinner
         mSpinnerCourses.setAdapter(mAdapterCourses);
 
-        loadCourseData();
+        //loadCourseData();
+        getLoaderManager().initLoader(LOADER_COURSES, null, this);
 
         readDisplayStateValues();
 
@@ -337,8 +339,29 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         CursorLoader loader = null;
         if(id == LOADER_NOTES){
             loader = createLoaderNotes();
+        }else if(id == LOADER_COURSES){
+            loader = createLoaderCourses();
         }
         return loader;
+    }
+
+    private CursorLoader createLoaderCourses() {
+        return new CursorLoader(this){
+            @Override
+            public Cursor loadInBackground() {
+                SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+
+                String[] courseColumns = {
+                        CourseInfoEntry.COLUMN_COURSE_TITLE,
+                        CourseInfoEntry.COLUMN_COURSE_ID,
+                        CourseInfoEntry._ID
+                };
+
+                //query the database
+                return db.query(CourseInfoEntry.TABLE_NAME, courseColumns, null, null, null, null, CourseInfoEntry.COLUMN_COURSE_TITLE);
+
+            }
+        };
     }
 
     private CursorLoader createLoaderNotes(){
@@ -366,6 +389,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if(loader.getId() == LOADER_NOTES){
             loadFinishedNotes(data);
+        }else if(loader.getId() == LOADER_COURSES){
+            mAdapterCourses.changeCursor(data);
+
         }
     }
 
@@ -381,8 +407,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         if(loader.getId() == LOADER_NOTES){
-           if(mNoteCursor != null)
+           if(mNoteCursor != null) {
                mNoteCursor.close();
+           }
+        }else if(loader.getId() == LOADER_COURSES){
+            mAdapterCourses.changeCursor(null);
         }
     }
 }
