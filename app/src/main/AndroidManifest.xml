@@ -11,21 +11,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver
+            android:name=".CourseEventsReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
         <provider
             android:name=".NoteKeeperProvider"
             android:authorities="com.example.notekeeper.provider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
+
         <service
             android:name=".NoteBackupService"
-            android:exported="false">
-        </service>
+            android:exported="false"></service>
         <service
             android:name=".NoteUploaderJobService"
             android:enabled="true"
             android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE">
-        </service>
+            android:permission="android.permission.BIND_JOB_SERVICE"></service>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
