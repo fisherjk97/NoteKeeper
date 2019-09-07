@@ -1,5 +1,6 @@
 package com.example.notekeeper;
 
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -36,10 +37,15 @@ public class CourseEventsMainActivity extends AppCompatActivity
     private void setupCourseEventReceiver(){
         mCourseEventsReceiver = new CourseEventsReceiver();
         mCourseEventsReceiver.setCourseEventsDisplayCallbacks(this);
+
+        IntentFilter intentFilter = new IntentFilter(CourseEventsReceiver.ACTION_COURSE_EVENT);
+
+        registerReceiver(mCourseEventsReceiver, intentFilter);
     }
 
     @Override
     protected void onDestroy(){
+        unregisterReceiver(mCourseEventsReceiver);
         super.onDestroy();
     }
     @Override
