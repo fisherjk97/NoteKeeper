@@ -10,7 +10,7 @@ import android.os.IBinder;
 
 public class NoteUploaderJobService extends JobService {
 
-    public static final String EXTRA_DATA_URI = "com.jwhh.jim.notekeeper.extras.DATA_URI";
+    public static final String EXTRA_DATA_URI = "com.com.notekeeper.extras.DATA_URI";
     private NoteUploader mNoteUploader;
 
     public NoteUploaderJobService() {
