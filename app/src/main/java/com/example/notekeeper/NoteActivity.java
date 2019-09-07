@@ -19,8 +19,10 @@ import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 
@@ -28,6 +30,7 @@ import com.example.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.example.notekeeper.NoteKeeperProviderContract.Courses;
 import com.example.notekeeper.NoteKeeperProviderContract.Notes;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -36,6 +39,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final int LOADER_NOTES = 0;
     public static final int LOADER_COURSES = 1;
     private final String TAG = getClass().getSimpleName();
+    private static final String sTAG = "NoteActivity.cs";
+
     public static final String NOTE_ID = "com.example.notekeeper.NOTE_ID";
 
     //we want to preserve these in the instance state
@@ -188,13 +193,36 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void createNewNote() {
 
-        AsyncTask<ContentValues, Void, Uri> task = new AsyncTask<ContentValues, Void, Uri>() {
+        AsyncTask<ContentValues, Integer, Uri> task = new AsyncTask<ContentValues, Integer, Uri>() {
+            private ProgressBar mProgressBar;
+
+            @Override
+            protected void onPreExecute(){
+                mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+                mProgressBar.setVisibility(View.VISIBLE);
+                mProgressBar.setProgress(1);
+            }
+
             @Override
             protected Uri doInBackground(ContentValues... params) {
                 Log.d(TAG, "doInBackground - thread: " + Thread.currentThread().getId());
                 ContentValues insertValues = params[0];
                 Uri rowUri = getContentResolver().insert(Notes.CONTENT_URI, insertValues);
+
+                simulateLongRunningWork(2000);//simulate slow database work
+                publishProgress(2);
+
+                simulateLongRunningWork(2000);//simulate slow database work
+                publishProgress(3);
+
                 return rowUri;
+            }
+
+            @Override
+            protected void onProgressUpdate(Integer... values) {
+                int progressValue = values[0];
+                mProgressBar.setProgress(progressValue);
+
             }
 
             @Override
@@ -202,7 +230,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
                 Log.d(TAG, "onPostExecute - thread: " + Thread.currentThread().getId());
 
                 mNoteUri = uri;
-                //displaySnackbar(mNoteUri.toString());
+                displaySnackbar(mNoteUri.toString());
+                mProgressBar.setVisibility(View.GONE);
             }
         };
 
@@ -216,6 +245,22 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         task.execute(values);
 
     }
+
+    private static void simulateLongRunningWork(long millis){
+        try {
+            Thread.sleep(millis);
+        }catch (Exception e){
+            Log.d(sTAG,"Unexpected interrupt - thread: " + Thread.currentThread().getId());
+        }
+    }
+
+    private void displaySnackbar(String message) {
+        View view = findViewById(R.id.spinner_courses);
+        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+    }
+
+
+
 
     private void displayNote(){
         String courseId = mNoteCursor.getString(mCourseIdPos);
