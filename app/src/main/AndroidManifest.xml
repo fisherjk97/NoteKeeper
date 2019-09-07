@@ -16,7 +16,10 @@
             android:authorities="com.example.notekeeper.provider"
             android:enabled="true"
             android:exported="true"></provider>
-
+        <service
+            android:name=".NoteBackupService"
+            android:exported="false">
+        </service>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
