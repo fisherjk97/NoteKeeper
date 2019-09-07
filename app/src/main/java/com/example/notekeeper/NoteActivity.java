@@ -349,7 +349,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         long currentTimeInMilliseconds = SystemClock.elapsedRealtime();
         long ONE_HOUR = 60 * 60 * 1000;
         long TEN_SECONDS = 10 * 1000;
-        long alarmTime = currentTimeInMilliseconds + TEN_SECONDS;
+        long alarmTime = currentTimeInMilliseconds + TEN_SECONDS;//will wait 10 seconds
         alarmManager.set(AlarmManager.ELAPSED_REALTIME, alarmTime, pendingIntent);
     }
 
