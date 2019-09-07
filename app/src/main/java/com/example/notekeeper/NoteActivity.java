@@ -187,12 +187,33 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void createNewNote() {
+
+        AsyncTask<ContentValues, Void, Uri> task = new AsyncTask<ContentValues, Void, Uri>() {
+            @Override
+            protected Uri doInBackground(ContentValues... params) {
+                Log.d(TAG, "doInBackground - thread: " + Thread.currentThread().getId());
+                ContentValues insertValues = params[0];
+                Uri rowUri = getContentResolver().insert(Notes.CONTENT_URI, insertValues);
+                return rowUri;
+            }
+
+            @Override
+            protected void onPostExecute(Uri uri){
+                Log.d(TAG, "onPostExecute - thread: " + Thread.currentThread().getId());
+
+                mNoteUri = uri;
+                //displaySnackbar(mNoteUri.toString());
+            }
+        };
+
+
         final ContentValues values = new ContentValues();
         values.put(Notes.COLUMN_COURSE_ID, "");
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
 
-        mNoteUri = getContentResolver().insert(Notes.CONTENT_URI, values);
+        Log.d(TAG, "Call to execute - thread: " + Thread.currentThread().getId());
+        task.execute(values);
 
     }
 
