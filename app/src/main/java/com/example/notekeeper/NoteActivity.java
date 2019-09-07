@@ -274,6 +274,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mTextNoteTitle.setText(noteTitle);
         mTextNoteText.setText(noteText);
 
+        //send a course event broadcast
+        CourseEventBroadcastHelper.sendEventBroadcast(this, courseId, "Editing Note");
+
     }
 
     private int getIndexOfCourseId(String courseId) {
