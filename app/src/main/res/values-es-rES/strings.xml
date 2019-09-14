@@ -3,4 +3,5 @@
     <string name="app_name">NoteKeeper</string>
     <string name="note_text_hint">nota de texto</string>
     <string name="title_activity_note">Editar Nota</string>
+    <string name="note_title_hint">nota de titulo</string>
 </resources>
