@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -30,6 +31,7 @@ public class ModuleStatusView extends View {
     private Paint mPaintFill;
     private float mRadius;
     private int mMaxHorizontalModules;
+    private int INVALID_INDEX = -1;
 
 
     public boolean[] getModuleStatus() {
@@ -71,7 +73,7 @@ public class ModuleStatusView extends View {
         mShapeSize = 144f;
         mSpacing = 30f;
         mRadius = (mShapeSize - mOutlineWidth) / 2;
-        setupModuleRectangles();
+
 
         mOutlineColor = Color.BLACK;
         mPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -83,6 +85,29 @@ public class ModuleStatusView extends View {
         mPaintFill = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintFill.setStyle(Paint.Style.FILL);
         mPaintFill.setColor(mFillColor);
+    }
+
+    private void setupEditModeValues() {
+        boolean[] exampleModuleValues = new boolean[EDIT_MODE_MODULE_COUNT];
+        int middle = EDIT_MODE_MODULE_COUNT / 2;
+        for(int i=0; i < middle; i++)
+            exampleModuleValues[i] = true;
+
+        setModuleStatus(exampleModuleValues);
+    }
+
+    private void setupModuleRectangles(int width) {
+        int availableWidth = width - getPaddingLeft() - getPaddingRight();
+        int horizontalModulesThatCanFit = (int)(availableWidth / (mShapeSize + mSpacing));
+        int maxHorizontalModules = Math.min(horizontalModulesThatCanFit, mModuleStatus.length);
+        mModuleRectangles = new Rect[mModuleStatus.length];
+        for(int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++) {
+            int column = moduleIndex % maxHorizontalModules;
+            int row = moduleIndex / maxHorizontalModules;
+            int x = getPaddingLeft() + (int) (column * (mShapeSize + mSpacing));
+            int y = getPaddingTop() + (int) (row * (mShapeSize + mSpacing));
+            mModuleRectangles[moduleIndex] = new Rect(x, y, x + (int) mShapeSize, y + (int) mShapeSize);
+        }
     }
 
     @Override
@@ -113,36 +138,40 @@ public class ModuleStatusView extends View {
         setupModuleRectangles(w);
     }
 
-    private void setupEditModeValues() {
-        boolean[] exampleModuleValues = new boolean[EDIT_MODE_MODULE_COUNT];
-        int middle = EDIT_MODE_MODULE_COUNT / 2;
-        for(int i=0; i < middle; i++)
-            exampleModuleValues[i] = true;
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        switch(event.getAction()){
 
-        setModuleStatus(exampleModuleValues);
+            case MotionEvent.ACTION_DOWN:
+                return true;
+            case MotionEvent.ACTION_UP:
+                int moduleIndex = findItemAtPoint(event.getX(), event.getY());
+                onModuleSelected(moduleIndex);
+                return true;
+        }
+
+
+        return super.onTouchEvent(event);
     }
 
-    private void setupModuleRectangles() {
-        mModuleRectangles = new Rect[mModuleStatus.length];
-        for(int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++) {
-            int x = getPaddingLeft() + (int) (moduleIndex * (mShapeSize + mSpacing));
-            int y = getPaddingTop();
-            mModuleRectangles[moduleIndex] = new Rect(x, y, x + (int) mShapeSize, y + (int) mShapeSize);
-        }
+    private void onModuleSelected(int moduleIndex) {
+        if(moduleIndex == INVALID_INDEX)
+            return;
+
+        mModuleStatus[moduleIndex] = ! mModuleStatus[moduleIndex];
+        invalidate();//call system to onDraw again
     }
 
-    private void setupModuleRectangles(int width) {
-        int availableWidth = width - getPaddingLeft() - getPaddingRight();
-        int horizontalModulesThatCanFit = (int)(availableWidth / (mShapeSize + mSpacing));
-        int maxHorizontalModules = Math.min(horizontalModulesThatCanFit, mModuleStatus.length);
-        mModuleRectangles = new Rect[mModuleStatus.length];
-        for(int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++) {
-            int column = moduleIndex % maxHorizontalModules;
-            int row = moduleIndex / maxHorizontalModules;
-            int x = getPaddingLeft() + (int) (column * (mShapeSize + mSpacing));
-            int y = getPaddingTop() + (int) (row * (mShapeSize + mSpacing));
-            mModuleRectangles[moduleIndex] = new Rect(x, y, x + (int) mShapeSize, y + (int) mShapeSize);
+    private int findItemAtPoint(float x, float y) {
+        int moduleIndex = INVALID_INDEX;
+        for(int i = 0; i < mModuleRectangles.length; i++) {
+            if(mModuleRectangles[i].contains((int) x, (int) y)) {
+                moduleIndex = i;
+                break;
+            }
         }
+
+        return moduleIndex;
     }
 
     @Override
@@ -158,6 +187,19 @@ public class ModuleStatusView extends View {
 
             canvas.drawCircle(x, y, mRadius, mPaintOutline);
         }
+    }
+
+    private void drawSquare(Canvas canvas, int moduleIndex) {
+        Rect moduleRectangle = mModuleRectangles[moduleIndex];
+
+        if(mModuleStatus[moduleIndex])
+            canvas.drawRect(moduleRectangle, mPaintFill);
+
+        canvas.drawRect(moduleRectangle.left + (mOutlineWidth/2),
+                moduleRectangle.top + (mOutlineWidth/2),
+                moduleRectangle.right - (mOutlineWidth/2),
+                moduleRectangle.bottom - (mOutlineWidth/2),
+                mPaintOutline);
     }
 
     /**
