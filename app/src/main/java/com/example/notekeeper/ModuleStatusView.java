@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -16,7 +17,10 @@ import android.view.View;
  * TODO: document your custom view class.
  */
 public class ModuleStatusView extends View {
+    private int INVALID_INDEX = -1;
     private static final int EDIT_MODE_MODULE_COUNT = 7;
+    private static final int SHAPE_CIRCLE = 0;
+    private static final float DEFAULT_OUTLINE_WIDTH_DP = 2f;
     private String mExampleString; // TODO: use a default from R.string...
     private int mExampleColor = Color.RED; // TODO: use a default from R.color...
     private float mExampleDimension = 0; // TODO: use a default from R.dimen...
@@ -31,7 +35,7 @@ public class ModuleStatusView extends View {
     private Paint mPaintFill;
     private float mRadius;
     private int mMaxHorizontalModules;
-    private int INVALID_INDEX = -1;
+    private int mShape;
 
 
     public boolean[] getModuleStatus() {
@@ -63,19 +67,26 @@ public class ModuleStatusView extends View {
         if(isInEditMode())
             setupEditModeValues();
 
+        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+        float displayDensity = dm.density;
+        float defaultOutlineWidthPixels = displayDensity * DEFAULT_OUTLINE_WIDTH_DP;
+
         // Load attributes
         final TypedArray a = getContext().obtainStyledAttributes(
                 attrs, R.styleable.ModuleStatusView, defStyle, 0);
 
+        mOutlineColor = a.getColor(R.styleable.ModuleStatusView_outlineColor, Color.BLACK);
+        mShape = a.getInt(R.styleable.ModuleStatusView_shape, SHAPE_CIRCLE);
+        mOutlineWidth = a.getDimension(R.styleable.ModuleStatusView_outlineWidth, defaultOutlineWidthPixels);
         a.recycle();
 
-        mOutlineWidth = 6f;
+
         mShapeSize = 144f;
         mSpacing = 30f;
         mRadius = (mShapeSize - mOutlineWidth) / 2;
 
 
-        mOutlineColor = Color.BLACK;
+
         mPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintOutline.setStyle(Paint.Style.STROKE);
         mPaintOutline.setStrokeWidth(mOutlineWidth);
@@ -154,6 +165,8 @@ public class ModuleStatusView extends View {
         return super.onTouchEvent(event);
     }
 
+
+
     private void onModuleSelected(int moduleIndex) {
         if(moduleIndex == INVALID_INDEX)
             return;
@@ -177,15 +190,16 @@ public class ModuleStatusView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         for(int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++) {
-            float x = mModuleRectangles[moduleIndex].centerX();
-            float y = mModuleRectangles[moduleIndex].centerY();
-
-            if(mModuleStatus[moduleIndex])
-                canvas.drawCircle(x, y, mRadius, mPaintFill);
-
-            canvas.drawCircle(x, y, mRadius, mPaintOutline);
+            if(mShape == SHAPE_CIRCLE) {
+                float x = mModuleRectangles[moduleIndex].centerX();
+                float y = mModuleRectangles[moduleIndex].centerY();
+                if (mModuleStatus[moduleIndex])
+                    canvas.drawCircle(x, y, mRadius, mPaintFill);
+                canvas.drawCircle(x, y, mRadius, mPaintOutline);
+            } else {
+                drawSquare(canvas, moduleIndex);
+            }
         }
     }
 
